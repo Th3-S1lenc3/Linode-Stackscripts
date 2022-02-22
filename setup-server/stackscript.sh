@@ -165,6 +165,26 @@ createUser() {
   echo "Completed User setup..." >> $logfile
 }
 
+# Install files
+
+installFiles() {
+  remoteURL="https://raw.githubusercontent.com/Th3-S1lenc3/Linode-Stackscripts/master/setup-server/files"
+  USER_HOME=`sed -n "s/${USER_NAME_LOWER}:x:[0-9]*:[0-9]*:[^:]*:\(.*\):.*/\1/p" < /etc/passwd`
+
+  wget $remoteURL/contents -O /tmp/contents
+
+  contents=($(cat /tmp/contents))
+
+  for file in "${contents[@]}"; do
+    if [[ $file == "advcp" || $file == "advmv" ]]; then
+      wget $remoteURL/$file -O /usr/local/bin/$file
+    else
+      wget $remoteURL/$file -O $USER_HOME/$USER_NAME/$file
+    fi
+  done
+
+}
+
 # Run Install in Sequence
 
 # starting of stackscript
@@ -180,5 +200,7 @@ setupFirewall
 setupSSH
 
 createUser
+
+installFiles
 
 echo "StackScript Done..." >> $logfile
